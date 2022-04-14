@@ -8,10 +8,12 @@ use std::io::Write;
 struct Position(i32, i32);
 
 pub struct World {
-    world_name: String,
+    pub world_name: String,
     pub height: i32,
     pub width: i32,
     pub map: Vec<Vec<char>>,
+    pub max_x: i32,
+    pub max_y: i32,
     player_list: Vec<Player>,
 }
 
@@ -23,6 +25,8 @@ impl World {
             width,
             player_list: vec![],
             map: vec![vec!['.'; width as usize]; height as usize],
+            max_x: width - 1,
+            max_y: height - 1,
         }
     }
 
@@ -55,7 +59,7 @@ impl World {
                 else if x == MAX_X {
                     self.map[y as usize][x as usize] = 'M';
                 } else {
-                    // Generate a random numbeer between 0 and 100
+                    // Generate a random number between 0 and 100
                     let mut rng = rand::thread_rng();
                     let rand_num = Uniform::new(0, 100).sample(&mut rng);
 
@@ -76,50 +80,54 @@ impl World {
                         if rand_num > 90 {
                             self.map[y as usize][x as usize] = 'M';
                         }
-                    }
-                    else {
+                    } else {
                         if rand_num == 47 {
                             self.map[y as usize][x as usize] = 'M';
                         }
                     }
-                    
+
                     // Generate rivers
                     if y > 5 && y < 8 && self.map[y as usize][x as usize] != 'M' {
                         if rand_num < 2 && self.map[y as usize][x as usize - 1] != 'R' {
                             self.map[y as usize][x as usize] = 'R';
                         }
                     } else {
-                        if self.map[y as usize - 1][x as usize] == 'R' && self.map[y as usize][x as usize] != 'M' {
-                            if rand_num > 25 {
+                        if self.map[y as usize - 1][x as usize] == 'R' {
+                            if rand_num > 20 {
                                 self.map[y as usize][x as usize] = 'R';
                             } else {
                                 self.map[y as usize][x as usize] = 'r';
                             }
-                        }
-
-                        if self.map[y as usize][x as usize - 1] == 'r' && self.map[y as usize][x as usize] != 'M' {
-                            if rand_num > 45 {
+                        } else if self.map[y as usize][x as usize - 1] == 'r'
+                            && self.map[y as usize][x as usize] != 'M'
+                        {
+                            if rand_num > 10 {
                                 self.map[y as usize][x as usize] = 'r';
                             } else {
+                                self.map[y as usize][x as usize] = 'R';
+                            }
+                        } else if self.map[y as usize - 1][x as usize] == 'r'
+                            && self.map[y as usize][x as usize] != 'M'
+                        {
+                            if rand_num > 89 {
                                 self.map[y as usize][x as usize] = 'R';
                             }
                         }
                     }
 
-                    if x > 6 && x < 7 || x < MAX_X - 6 && x > MAX_X - 7 {
-                        if rand_num > 50 {
-                            self.map[y as usize][x as usize] = 'r';
-                        }
-                    }
-
-                    // Geneerate some trees
+                    // Generate some trees
                     if y > 6 && y < MAX_Y - 6 && x > 6 && x < MAX_X - 6 {
                         if rand_num > 90 && self.map[y as usize][x as usize] != 'M' {
                             self.map[y as usize][x as usize] = 'T';
                         }
                     }
                 }
+
+                print!("{}", self.map[y as usize][x as usize]);
+                io::stdout().flush().expect("Could not flush stdout");
             }
+
+            println!();
         }
     }
 
@@ -144,12 +152,12 @@ impl World {
         for y in 0..self.height {
             for x in 0..self.width {
                 if self.tile_has_player(vec![y, x]) {
-                    print!("{}", "@".magenta().blink());
+                    print!("{}", "@".magenta().blink().bold());
                 } else {
                     if self.map[y as usize][x as usize] == 'M' {
-                        print!("{}", "M".truecolor(255, 248, 220));
+                        print!("{}", "M".truecolor(128, 128, 128));
                     } else if self.map[y as usize][x as usize] == 'T' {
-                        print!("{}", "T".bright_green().bold());
+                        print!("{}", "T".green().bold());
                     } else if self.map[y as usize][x as usize] == 'R' {
                         print!("{}", "|".blue().bold());
                     } else if self.map[y as usize][x as usize] == 'r' {
