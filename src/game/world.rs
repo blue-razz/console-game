@@ -55,7 +55,7 @@ impl World {
                 else if x == MAX_X {
                     self.map[y as usize][x as usize] = 'M';
                 } else {
-                    // Generate a random numbeer between 0 and 1
+                    // Generate a random numbeer between 0 and 100
                     let mut rng = rand::thread_rng();
                     let rand_num = Uniform::new(0, 100).sample(&mut rng);
 
@@ -73,20 +73,45 @@ impl World {
                             self.map[y as usize][x as usize] = 'M';
                         }
                     } else if x > 5 && x < 12 || x > MAX_X - 12 && x < MAX_X - 5 {
-                        if rand_num > 95 {
+                        if rand_num > 90 {
                             self.map[y as usize][x as usize] = 'M';
                         }
                     }
-
-                    // Sprinkle some monutains into the mix
                     else {
                         if rand_num == 47 {
                             self.map[y as usize][x as usize] = 'M';
                         }
                     }
                     
-                    // TODO: Generate rivers
-                    
+                    // Generate rivers
+                    if y > 5 && y < 8 && self.map[y as usize][x as usize] != 'M' {
+                        if rand_num < 2 && self.map[y as usize][x as usize - 1] != 'R' {
+                            self.map[y as usize][x as usize] = 'R';
+                        }
+                    } else {
+                        if self.map[y as usize - 1][x as usize] == 'R' && self.map[y as usize][x as usize] != 'M' {
+                            if rand_num > 25 {
+                                self.map[y as usize][x as usize] = 'R';
+                            } else {
+                                self.map[y as usize][x as usize] = 'r';
+                            }
+                        }
+
+                        if self.map[y as usize][x as usize - 1] == 'r' && self.map[y as usize][x as usize] != 'M' {
+                            if rand_num > 45 {
+                                self.map[y as usize][x as usize] = 'r';
+                            } else {
+                                self.map[y as usize][x as usize] = 'R';
+                            }
+                        }
+                    }
+
+                    if x > 6 && x < 7 || x < MAX_X - 6 && x > MAX_X - 7 {
+                        if rand_num > 50 {
+                            self.map[y as usize][x as usize] = 'r';
+                        }
+                    }
+
                     // Geneerate some trees
                     if y > 6 && y < MAX_Y - 6 && x > 6 && x < MAX_X - 6 {
                         if rand_num > 90 && self.map[y as usize][x as usize] != 'M' {
@@ -125,8 +150,12 @@ impl World {
                         print!("{}", "M".truecolor(255, 248, 220));
                     } else if self.map[y as usize][x as usize] == 'T' {
                         print!("{}", "T".bright_green().bold());
+                    } else if self.map[y as usize][x as usize] == 'R' {
+                        print!("{}", "|".blue().bold());
+                    } else if self.map[y as usize][x as usize] == 'r' {
+                        print!("{}", "-".blue().bold());
                     } else {
-                        print!("{}", ".".green());
+                        print!("{}", ".".white());
                     }
                 }
 
